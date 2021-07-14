@@ -1,0 +1,6 @@
+PROJECT          = projet_reversi
+OUTPUT_DIRECTORY = ../doc
+INPUT            = .
+EXTRACT_ALL      = YES
+GENERATE_LATEX   = NO 
+OUTPUT_LANGAGE   = French

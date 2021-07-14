@@ -1,0 +1,67 @@
+
+  # étapes à réaliser, selon le pipeline : Build -> Test -> Deploy
+
+# étape "cpp_build" : compile le projet C++
+cpp_build:
+    # c'est une étape de Build dans le pipeline
+    stage: build
+    # il faut partir d'un conteneur docker "alpine"
+    image: alpine
+    # on installe les paquets nécessaires dans le conteneur 
+    before_script:
+        - apk add build-base cmake cpputest g++ pkgconf
+    # on lance ces commandes pour réaliser l'étape courante
+    script:
+        - mkdir build
+        - cd build
+        - cmake ..
+        - make 
+    # on demande de conserver les nouveaux fichiers créés
+    artifacts:
+        untracked: true
+
+# étape "cpp_test" : lance les tests unitaires du projet C++
+cpp_test:
+    # c'est une étape de Test dans le pipeline
+    stage: test
+    # l'étape courante dépend de l'étape "cpp_build"
+    dependencies: 
+        - cpp_build
+    # il faut partir d'un conteneur docker "alpine"
+    image: alpine
+    # on installe les paquets nécessaires dans le conteneur 
+    before_script:
+        - apk add build-base cpputest g++
+    # on lance ces commandes pour réaliser l'étape courante
+    script:
+        - cd build
+        - ./main_test.out 
+
+doc_build_cpp:
+    stage: build
+    image: alpine
+    before_script:
+        - apk add build-base doxygen
+    script:
+        - cd src
+        - doxygen
+    artifacts:
+        untracked: true
+
+
+# crée et déploie une page web à une URL : https://<user>.gitlab.io/<repo>
+pages:
+    # c'est une étape de Deploy dans le pipeline
+    stage: deploy
+    # il faut partir d'un conteneur docker "alpine"
+    image: alpine
+    # on lance ces commandes pour réaliser l'étape courante
+    script:
+        - mkdir -p public/doc
+        - cp doc/html/index.html public/
+        - cp -r doc/html/* public/doc/
+    # on demande de conserver le dossier "public" (qui sera automatiquement déployé)
+    artifacts:
+        paths:
+            - public
+
